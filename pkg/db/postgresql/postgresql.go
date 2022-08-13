@@ -37,7 +37,7 @@ func NewClient(ctx context.Context, maxConnectionAttempts int) (pool *pgxpool.Po
 	}, maxConnectionAttempts, 5*time.Second)
 
 	if err != nil {
-		log.Fatal().Stack().Msg("Failed to connect to postgres")
+		log.Error().Stack().Msg("Failed to connect to postgres")
 	}
 
 	return pool, nil
