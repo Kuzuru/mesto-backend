@@ -1,6 +1,7 @@
 package server
 
 import (
+	"github.com/gofiber/swagger"
 	"os"
 
 	"github.com/bytedance/sonic"
@@ -17,6 +18,9 @@ func Run() {
 	})
 
 	address := ":" + os.Getenv("PORT")
+
+	// Registering Swagger for API documentation
+	app.Get("/swagger/*", swagger.HandlerDefault)
 
 	// Registering all available HTTP endpoints
 	RegisterHTTPEndpoints(app)
