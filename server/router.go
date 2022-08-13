@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"github.com/google/uuid"
 
 	"mesto/internal/user"
 	psql "mesto/internal/user/db"
@@ -14,9 +15,24 @@ import (
 func userRoutes(app fiber.Router, repo user.Storage) {
 	// Get user info
 	app.Get("/users/me", func(c *fiber.Ctx) error {
+		// Checking UUID validity
+		_, err := uuid.Parse(c.Get("Authorization"))
+		if err != nil {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"message": "Invalid token",
+			})
+		}
+
 		u, err := repo.FindOne(context.TODO(), c.Get("Authorization"))
 		if err != nil {
-			log.Fatal().Stack().Msgf("FIND_ALL: %v", err)
+			if u == nil {
+				return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+					"message": "Invalid token",
+				})
+			}
+
+			log.Error().Stack().Msgf("[PSQL.FindOne] Something went wrong: %+v", err)
+
 			return c.SendStatus(500)
 		}
 
@@ -30,19 +46,42 @@ func userRoutes(app fiber.Router, repo user.Storage) {
 
 	// Update user info
 	app.Patch("/users/me", func(c *fiber.Ctx) error {
-		var u = new(user.User)
+		// Checking UUID validity
+		_, err := uuid.Parse(c.Get("Authorization"))
+		if err != nil {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"message": "Invalid token",
+			})
+		}
+
+		u, err := repo.FindOne(context.TODO(), c.Get("Authorization"))
+		if err != nil {
+			if u == nil {
+				return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+					"message": "Invalid token",
+				})
+			}
+
+			log.Error().Stack().Msgf("[PSQL.FindOne] Something went wrong: %+v", err)
+
+			return c.SendStatus(500)
+		}
 
 		if err := c.BodyParser(u); err != nil {
 			log.Error().Msgf("Couldn't parse user info: %v", err)
-			return c.SendStatus(500)
+			return c.Status(500).JSON(fiber.Map{
+				"message": "Failed to parse user info",
+			})
 		}
 
 		u.AuthID = c.Get("Authorization")
 
-		err := repo.UpdateProfile(context.TODO(), *u)
+		err = repo.UpdateProfile(context.TODO(), *u)
 		if err != nil {
 			log.Error().Msgf("Couldn't update user info: %v", err)
-			return c.SendStatus(500)
+			return c.Status(500).JSON(fiber.Map{
+				"message": "Failed to update user info",
+			})
 		}
 
 		return c.JSON(fiber.Map{
@@ -55,7 +94,7 @@ func userRoutes(app fiber.Router, repo user.Storage) {
 func RegisterHTTPEndpoints(app *fiber.App) {
 	psqlClient, err := postgresql.NewClient(context.TODO(), 3)
 	if err != nil {
-		log.Fatal().Stack().Msgf("%v", err)
+		log.Error().Stack().Msgf("%v", err)
 	}
 
 	repository := psql.NewRepository(psqlClient)
