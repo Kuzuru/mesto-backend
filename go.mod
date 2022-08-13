@@ -13,6 +13,7 @@ require (
 require (
 	github.com/andybalholm/brotli v1.0.4 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20220526154910-8bf9453eb81a // indirect
+	github.com/google/uuid v1.3.0 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgconn v1.13.0 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect
