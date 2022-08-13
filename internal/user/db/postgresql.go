@@ -59,17 +59,17 @@ func (r *repository) FindAll(ctx context.Context) (u []user.User, err error) {
 	return users, nil
 }
 
-func (r *repository) FindOne(ctx context.Context, authId string) (user.User, error) {
+func (r *repository) FindOne(ctx context.Context, authId string) (*user.User, error) {
 	query := `SELECT id, auth_id, name, about, avatar FROM public.users WHERE auth_id = $1;`
 
 	var u user.User
 
 	err := r.client.QueryRow(ctx, query, authId).Scan(&u.ID, &u.AuthID, &u.Name, &u.About, &u.Avatar)
 	if err != nil {
-		return user.User{}, err
+		return nil, err
 	}
 
-	return u, nil
+	return &u, nil
 }
 
 func (r *repository) UpdateProfile(ctx context.Context, user user.User) error {
