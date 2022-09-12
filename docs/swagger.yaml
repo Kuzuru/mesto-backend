@@ -1,0 +1,94 @@
+basePath: /
+definitions:
+  handler.ErrorResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  handler.GetUserInfoResponse:
+    properties:
+      about:
+        type: string
+      avatar:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  handler.PatchUserInfoResponse:
+    properties:
+      about:
+        type: string
+      name:
+        type: string
+    type: object
+host: 95.82.203.66
+info:
+  contact:
+    email: kuzuru.dev@gmail.com
+    name: '- Поддержка API'
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: Документация API Mesto
+  version: "1.0"
+paths:
+  /v1/users/me:
+    get:
+      description: Просмотр информации о пользователе
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.GetUserInfoResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Информация о пользователе
+      tags:
+      - User
+    patch:
+      description: Позволяет изменить поля about и name пользователя
+      parameters:
+      - description: Смена данных аккаунта
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/handler.PatchUserInfoResponse'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.PatchUserInfoResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Изменить информацию о профиле
+      tags:
+      - User
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
