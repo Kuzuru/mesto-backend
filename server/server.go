@@ -1,11 +1,12 @@
 package server
 
 import (
-	"github.com/gofiber/swagger"
 	"os"
 
 	"github.com/bytedance/sonic"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/swagger"
 	"github.com/rs/zerolog/log"
 )
 
@@ -16,6 +17,8 @@ func Run() {
 		JSONEncoder:   sonic.Marshal,
 		JSONDecoder:   sonic.Unmarshal,
 	})
+
+	app.Use(cors.New())
 
 	address := ":" + os.Getenv("PORT")
 
