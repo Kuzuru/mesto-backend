@@ -16,6 +16,11 @@ definitions:
       name:
         type: string
     type: object
+  handler.PatchUserAvatarInput:
+    properties:
+      avatar:
+        type: string
+    type: object
   handler.PatchUserInfoResponse:
     properties:
       about:
@@ -23,14 +28,14 @@ definitions:
       name:
         type: string
     type: object
-host: 95.82.203.66
+host: localhost
 info:
   contact:
     email: kuzuru.dev@gmail.com
     name: '- Поддержка API'
   license:
     name: Apache 2.0
-    url: http://www.apache.org/licenses/LICENSE-2.0.html
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
   title: Документация API Mesto
   version: "1.0"
 paths:
@@ -60,7 +65,7 @@ paths:
     patch:
       description: Позволяет изменить поля about и name пользователя
       parameters:
-      - description: Смена данных аккаунта
+      - description: Необходимые JSON поля
         in: body
         name: input
         required: true
@@ -84,6 +89,34 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Изменить информацию о профиле
+      tags:
+      - User
+  /v1/users/me/avatar:
+    patch:
+      description: Позволяет изменить аватар пользователя
+      parameters:
+      - description: Необходимые JSON поля
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/handler.PatchUserAvatarInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Изменить аватар профиля
       tags:
       - User
 securityDefinitions:

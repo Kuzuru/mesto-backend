@@ -12,7 +12,7 @@
         },
         "version": "1.0"
     },
-    "host": "95.82.203.66",
+    "host": "localhost",
     "basePath": "/",
     "paths": {
         "/v1/users/me": {
@@ -67,7 +67,7 @@
                 "summary": "Изменить информацию о профиле",
                 "parameters": [
                     {
-                        "description": "Смена данных аккаунта",
+                        "description": "Необходимые JSON поля",
                         "name": "input",
                         "in": "body",
                         "required": true,
@@ -82,6 +82,51 @@
                         "schema": {
                             "$ref": "#/definitions/handler.PatchUserInfoResponse"
                         }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/users/me/avatar": {
+            "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Позволяет изменить аватар пользователя",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Изменить аватар профиля",
+                "parameters": [
+                    {
+                        "description": "Необходимые JSON поля",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.PatchUserAvatarInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
                     },
                     "401": {
                         "description": "Unauthorized",
@@ -121,6 +166,14 @@
                     "type": "integer"
                 },
                 "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.PatchUserAvatarInput": {
+            "type": "object",
+            "properties": {
+                "avatar": {
                     "type": "string"
                 }
             }

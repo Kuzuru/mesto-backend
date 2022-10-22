@@ -75,7 +75,7 @@ const docTemplate = `{
                 "summary": "Изменить информацию о профиле",
                 "parameters": [
                     {
-                        "description": "Смена данных аккаунта",
+                        "description": "Необходимые JSON поля",
                         "name": "input",
                         "in": "body",
                         "required": true,
@@ -90,6 +90,51 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/handler.PatchUserInfoResponse"
                         }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/users/me/avatar": {
+            "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Позволяет изменить аватар пользователя",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Изменить аватар профиля",
+                "parameters": [
+                    {
+                        "description": "Необходимые JSON поля",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.PatchUserAvatarInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
                     },
                     "401": {
                         "description": "Unauthorized",
@@ -133,6 +178,14 @@ const docTemplate = `{
                 }
             }
         },
+        "handler.PatchUserAvatarInput": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                }
+            }
+        },
         "handler.PatchUserInfoResponse": {
             "type": "object",
             "properties": {
@@ -157,7 +210,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "95.82.203.66",
+	Host:             "localhost",
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "Документация API Mesto",

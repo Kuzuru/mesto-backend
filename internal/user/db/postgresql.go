@@ -89,8 +89,14 @@ func (r *repository) Delete(ctx context.Context, id string) error {
 }
 
 func (r *repository) UpdateAvatar(ctx context.Context, user user.User) error {
-	//TODO implement me
-	panic("implement me")
+	query := `UPDATE users SET avatar = $1 WHERE auth_id = $2`
+
+	_, err := r.client.Exec(ctx, query, user.Avatar, user.AuthID)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func NewRepository(client postgresql.Client) user.Storage {

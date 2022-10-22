@@ -2,10 +2,10 @@ package server
 
 import (
 	"context"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
+	"net/url"
 
 	"mesto/internal/user"
 	psql "mesto/internal/user/db"
@@ -25,13 +25,82 @@ func RegisterHTTPEndpoints(app *fiber.App) {
 
 	routeGetUserInfo(v1, repository)
 	routePatchUserInfo(v1, repository)
+
+	routePatchUserAvatar(v1, repository)
+}
+
+// @Summary Изменить аватар профиля
+// @Security ApiKeyAuth
+// @Tags User
+// @Description Позволяет изменить аватар пользователя
+// @Param input body handler.PatchUserAvatarInput true "Необходимые JSON поля"
+// @Produce json
+// @Success 200
+// @Failure 401,500 {object} handler.ErrorResponse
+// @Router /v1/users/me/avatar [patch]
+func routePatchUserAvatar(app fiber.Router, repo user.Storage) {
+	app.Patch("/users/me/avatar", func(c *fiber.Ctx) error {
+		// Checking UUID validity
+		_, err := uuid.Parse(c.Get("Authorization"))
+		if err != nil {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"message": "Invalid token",
+			})
+		}
+
+		u, err := repo.FindOne(context.TODO(), c.Get("Authorization"))
+		if err != nil {
+			if u == nil {
+				return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+					"message": "Invalid token",
+				})
+			}
+
+			log.Error().Stack().Msgf("[PSQL.FindOne] Something went wrong: %+v", err)
+
+			return c.SendStatus(500)
+		}
+
+		if err := c.BodyParser(u); err != nil {
+			log.Error().Msgf("Couldn't parse user info: %v", err)
+
+			return c.Status(500).JSON(fiber.Map{
+				"message": "Failed to parse user info",
+			})
+		}
+
+		// Checking if avatar is not valid
+		URI, err := url.ParseRequestURI(u.Avatar)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": "URI is not valid",
+			})
+		}
+
+		if URI.Scheme != "http" && URI.Scheme != "https" {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": "URI scheme is not valid",
+			})
+		}
+
+		err = repo.UpdateAvatar(context.TODO(), *u)
+		if err != nil {
+			log.Error().Msgf("Couldn't update user avatar: %v", err)
+
+			return c.Status(500).JSON(fiber.Map{
+				"message": "Failed to update user avatar",
+			})
+		}
+
+		return c.SendStatus(fiber.StatusOK)
+	})
 }
 
 // @Summary Изменить информацию о профиле
 // @Security ApiKeyAuth
 // @Tags User
 // @Description Позволяет изменить поля about и name пользователя
-// @Param input body handler.PatchUserInfoResponse true "Смена данных аккаунта"
+// @Param input body handler.PatchUserInfoResponse true "Необходимые JSON поля"
 // @Produce json
 // @Success 200 {object} handler.PatchUserInfoResponse
 // @Failure 401,500 {object} handler.ErrorResponse
@@ -61,6 +130,7 @@ func routePatchUserInfo(app fiber.Router, repo user.Storage) {
 
 		if err := c.BodyParser(u); err != nil {
 			log.Error().Msgf("Couldn't parse user info: %v", err)
+
 			return c.Status(500).JSON(fiber.Map{
 				"message": "Failed to parse user info",
 			})
